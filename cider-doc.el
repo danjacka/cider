@@ -266,17 +266,17 @@ opposite of what that option dictates."
 
 (defconst cider-doc-buffer "*cider-doc*")
 
-(defun cider-create-doc-buffer (symbol &optional compact)
+(defun cider-create-doc-buffer (symbol &optional compact choice)
   "Populates *cider-doc* with the documentation for SYMBOL,
 favoring a COMPACT format if specified."
-  (when-let* ((info (cider-var-info symbol)))
+  (when-let* ((info (cider-var-info symbol nil choice)))
     (cider-docview-render (cider-make-popup-buffer cider-doc-buffer nil 'ancillary) symbol info compact)))
 
-(defun cider-create-compact-doc-buffer (symbol)
+(defun cider-create-compact-doc-buffer (symbol &optional choice)
   "Populates *cider-doc* with the documentation for SYMBOL.
 
 Favors a compact rendering of docstrings"
-  (cider-create-doc-buffer symbol :compact))
+  (cider-create-doc-buffer symbol :compact choice))
 
 (defun cider-doc-lookup (symbol)
   "Look up documentation for SYMBOL."

@@ -506,15 +506,17 @@ forwarding PROMPT and CANDIDATES as-is.
 See also: `cider--with-temporary-ido-keys'."
   (completing-read prompt candidates))
 
-(defun cider--var-choice (var-info)
+(defun cider--var-choice (var-info &optional choice)
   "Prompt to choose from among multiple VAR-INFO candidates, if required.
 This is needed only when the symbol queried is an unqualified host platform
 method, and multiple classes have a so-named member.  If VAR-INFO does not
 contain a `candidates' key, it is returned as is."
   (let ((candidates (nrepl-dict-get var-info "candidates")))
     (if candidates
-        (let* ((classes (nrepl-dict-keys candidates))
-               (choice (cider-class-choice-completing-read "Member in class: " classes))
+        (let* ((classes (sort (nrepl-dict-keys candidates)
+                              #'string-lessp))
+               (choice (or choice
+                           (cider-class-choice-completing-read "Member in class: " classes)))
                (info (nrepl-dict-get candidates choice)))
           info)
       var-info)))
@@ -547,7 +549,7 @@ Used only when the info nREPL middleware is not available."
          (var-info (nrepl-dict-from-hash (parseedn-read-str (nrepl-dict-get response "value")))))
     var-info))
 
-(defun cider-var-info (var &optional all)
+(defun cider-var-info (var &optional all choice)
   "Return VAR's info as an alist with list cdrs.
 When multiple matching vars are returned you'll be prompted to select one,
 unless ALL is truthy."
@@ -556,7 +558,9 @@ unless ALL is truthy."
                      ((cider-nrepl-op-supported-p "info") (cider-sync-request:info var nil nil (cider-completion-get-context t)))
                      ((cider-nrepl-op-supported-p "lookup") (cider-sync-request:lookup var))
                      (t (cider-fallback-eval:info var)))))
-      (if all var-info (cider--var-choice var-info)))))
+      (if all
+          var-info
+        (cider--var-choice var-info choice)))))
 
 (defun cider-member-info (class member)
   "Return the CLASS MEMBER's info as an alist with list cdrs."

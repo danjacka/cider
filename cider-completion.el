@@ -202,6 +202,9 @@ performed by `cider-annotate-completion-function'."
             :annotation-function #'cider-annotate-symbol
             :company-kind #'cider-company-symbol-kind
             :company-doc-buffer #'cider-create-compact-doc-buffer
+            :company-variants (lambda (symbol)
+                                (sort (nrepl-dict-keys (cider-var-info symbol 'all))
+                                      #'string-lessp))
             :company-location #'cider-company-location
             :company-docsig #'cider-company-docsig))))
 
