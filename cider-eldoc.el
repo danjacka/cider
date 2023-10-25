@@ -389,7 +389,7 @@ Otherwise return the eldoc of the first symbol of the sexp."
     (":refer" "clojure.core/refer")
     (_ thing)))
 
-(defun cider-eldoc-info (thing)
+(defun cider-eldoc-info (thing &optional class-choice)
   "Return the info for THING (as string).
 This includes the arglist and ns and symbol name (if available)."
   (let ((thing (cider-eldoc--convert-ns-keywords thing)))
@@ -416,9 +416,10 @@ This includes the arglist and ns and symbol name (if available)."
                                                     "type" "function"
                                                     "arglists" '(("args*"))))
        ;; generic case
-       (t (if (equal thing (car cider-eldoc-last-symbol))
+       (t (if (equal (list thing class-choice)
+                     (car cider-eldoc-last-symbol))
               (cadr cider-eldoc-last-symbol)
-            (when-let* ((eldoc-info (cider-sync-request:eldoc thing nil nil (cider-completion-get-context t))))
+            (when-let* ((eldoc-info (cider-sync-request:eldoc thing class-choice nil (cider-completion-get-context t))))
               (let* ((arglists (nrepl-dict-get eldoc-info "eldoc"))
                      (docstring (nrepl-dict-get eldoc-info "docstring"))
                      (type (nrepl-dict-get eldoc-info "type"))
@@ -426,9 +427,11 @@ This includes the arglist and ns and symbol name (if available)."
                      (class (nrepl-dict-get eldoc-info "class"))
                      (name (nrepl-dict-get eldoc-info "name"))
                      (member (nrepl-dict-get eldoc-info "member"))
-                     (ns-or-class (if (and ns (not (string= ns "")))
-                                      ns
-                                    class))
+                     (ns-or-class (or (and class-choice
+                                           (list class-choice))
+                                      (if (and ns (not (string= ns "")))
+                                          ns
+                                        class)))
                      (name-or-member (if (and name (not (string= name "")))
                                          name
                                        (format ".%s" member)))
@@ -455,11 +458,13 @@ This includes the arglist and ns and symbol name (if available)."
                         (lax-plist-put eldoc-plist "arglists"
                                        (cider--eldoc-add-datomic-query-inputs-to-arglists arglists))))
                      ;; if none of the clauses is successful, do cache the eldoc
-                     (t (setq cider-eldoc-last-symbol (list thing eldoc-plist))))
+                     (t (setq cider-eldoc-last-symbol (list (list thing class-choice)
+                                                            eldoc-plist))))
                   ;; middleware eldoc lookups are expensive, so we
                   ;; cache the last lookup.  This eliminates the need
                   ;; for extra middleware requests within the same sexp.
-                  (setq cider-eldoc-last-symbol (list thing eldoc-plist)))
+                  (setq cider-eldoc-last-symbol (list (list thing class-choice)
+                                                      eldoc-plist)))
                 eldoc-plist))))))))
 
 (defun cider--eldoc-remove-dot (sym)

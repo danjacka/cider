@@ -203,8 +203,10 @@ performed by `cider-annotate-completion-function'."
             :company-kind #'cider-company-symbol-kind
             :company-doc-buffer #'cider-create-compact-doc-buffer
             :company-variants (lambda (symbol)
-                                (sort (nrepl-dict-keys (cider-var-info symbol 'all))
-                                      #'string-lessp))
+                                (when-let* ((d (cider-var-info symbol 'all))
+                                            (c (nrepl-dict-get d "candidates")))
+                                  (sort (nrepl-dict-keys c)
+                                        #'string-lessp)))
             :company-location #'cider-company-location
             :company-docsig #'cider-company-docsig))))
 
@@ -230,14 +232,16 @@ in the buffer."
         (forward-line (1- line))
         (cons buffer (point))))))
 
-(defun cider-company-docsig (thing)
+(defun cider-company-docsig (thing &optional choice)
   "Return signature for THING."
-  (when-let ((eldoc-info (cider-eldoc-info thing)))
+  (when-let ((eldoc-info (cider-eldoc-info thing choice)))
     (let* ((ns (lax-plist-get eldoc-info "ns"))
            (symbol (lax-plist-get eldoc-info "symbol"))
            (arglists (lax-plist-get eldoc-info "arglists")))
       (format "%s: %s"
-              (cider-eldoc-format-thing ns symbol thing
+              (cider-eldoc-format-thing ns
+                                        symbol
+                                        thing
                                         (cider-eldoc-thing-type eldoc-info))
               (cider-eldoc-format-arglist arglists 0)))))
 
