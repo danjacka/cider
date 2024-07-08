@@ -385,14 +385,14 @@ With `cider-eval-defun-at-point` we get:
 
 You might have noticed that CIDER typically has 2-3 different keybindings for
 many evaluation commands. In case you've been wondering "Why?" the answer is
-pretty simple - legacy. The principle sources of inspiration for CIDER, Emacs and SLIME,
-provide more or less the same functionality, but use different keybindings. CIDER
-tried to find a common ground by adopting them both.
+pretty simple: legacy. The principal sources of inspiration for CIDER--Emacs
+and SLIME--provide more or less the same functionality, but use different
+keybindings. CIDER tried to find a common ground by adopting them both.
 
-On top of this, at some when it became clear that CIDER has set the world record
-for evaluation command, we've introduced a dedicated keymap for all eval commands
-(that's everything with the prefix kbd:[C-c C-v]). This leads to funny situations
-like `cider-eval-defun-at-point` having 3 keybindings:
+On top of this, when it became clear that CIDER had set the world record
+for number of evaluation commands, we introduced a dedicated keymap for all eval
+commands (that's everything with the prefix kbd:[C-c C-v]). This leads to funny
+situations like `cider-eval-defun-at-point` having 3 keybindings:
 
 * kbd:[C-M-x] (Emacs style)
 * kbd:[C-c C-c] (SLIME style)
